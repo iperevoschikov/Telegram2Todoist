@@ -21,8 +21,9 @@ public static class ContainerConfiguration
                 client.BaseAddress = new Uri("https://api.todoist.com/rest/v2/");
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {todoistApiToken}");
-            })
-            ;
+            });
+        services
+            .AddSingleton<TodoistApiClient>();
         return services.BuildServiceProvider();
     }
 }
