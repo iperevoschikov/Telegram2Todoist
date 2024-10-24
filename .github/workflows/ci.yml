@@ -46,7 +46,7 @@ jobs:
     env:
       YC_FOLDER_ID: b1ghjemjicrojm2tmnfc
       YC_SERVICE_ACCOUNT_ID: aje8bq8bpjcvkf9k73jp
-      FN_TODOIST_API_TOKEN: ${{ secrets.TODOIST_API_TOKEN }}
+      TODOIST_API_TOKEN: ${{ secrets.TODOIST_API_TOKEN }}
 
     strategy:
       matrix:
