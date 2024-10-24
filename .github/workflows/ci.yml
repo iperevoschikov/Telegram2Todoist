@@ -1,0 +1,78 @@
+name: Deploy Yandex Cloud Function
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+env:
+  ZIP_FILE: output.zip
+  YC_BUCKET_NAME: telegram2todoist-sources
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "8.x"
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build project
+        run: dotnet publish Telegram2Todoist.Functions -c Release -o output
+
+      - name: Set up AWS CLI and upload release
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set default.region ru-central1
+          aws configure set default.s3.endpoint_url https://s3.yandexcloud.net
+          cd output 
+          zip -r $ZIP_FILE *
+          aws s3 cp $ZIP_FILE s3://$YC_BUCKET_NAME/$ZIP_FILE --acl private --endpoint-url https://s3.yandexcloud.net
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      YC_FOLDER_ID: b1ghjemjicrojm2tmnfc
+      YC_SERVICE_ACCOUNT_ID: aje8bq8bpjcvkf9k73jp
+      FN_TODOIST_API_TOKEN: ${{ secrets.FN_TODOIST_API_TOKEN }}
+
+    strategy:
+      matrix:
+        include:
+          - YC_FUNCTION_ID: d4e0a03vmqaj555hlqm8
+            YC_FUNCTION_ENTRYPOINT: "Telegram2Todoist.Functions.WebHookFunctionHandler"
+
+    steps:
+      - name: Install Yandex Cloud CLI and deploy # todo move to docker image
+        run: |
+          curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+          echo 'export PATH=$HOME/yandex-cloud/bin:$PATH' >> $GITHUB_ENV
+          export PATH=$HOME/yandex-cloud/bin:$PATH
+          source $GITHUB_ENV
+          source ~/.bashrc
+          which yc
+          yc --version
+          yc config set token ${{ secrets.YC_OAUTH_TOKEN }}
+          yc serverless function version create \
+            --function-id ${{ matrix.YC_FUNCTION_ID }} \
+            --runtime dotnet8 \
+            --entrypoint ${{ matrix.YC_FUNCTION_ENTRYPOINT }} \
+            --memory 128m \
+            --execution-timeout 600s \
+            --package-bucket-name $YC_BUCKET_NAME \
+            --package-object-name $ZIP_FILE \
+            --folder-id $YC_FOLDER_ID \
+            --service-account-id $YC_SERVICE_ACCOUNT_ID \
+            --environment TODOIST_API_TOKEN=$FN_TODOIST_API_TOKEN
