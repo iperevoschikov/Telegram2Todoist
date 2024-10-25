@@ -31,8 +31,8 @@ public class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerRequest, 
         var logger = serviceProvider.GetRequiredService<ILogger<WebHookFunctionHandler>>();
         var todoistApiClient = serviceProvider.GetRequiredService<TodoistApiClient>();
 
+        logger.LogInformation("Received webhook update: {Update}", request.Body);
         var update = JsonConvert.DeserializeObject<Update>(request.Body)!;
-        logger.LogInformation("Received webhook update: {Text}", update.Message?.Text);
 
         var inbox = (await todoistApiClient.GetProjects()).FirstOrDefault(p => p.IsInboxProject);
         if (inbox == null)
@@ -40,7 +40,7 @@ public class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerRequest, 
 
         await todoistApiClient.CreateTaskAsync(
             inbox.Id,
-            update.Message?.Contact?.ToString() ?? "unknown",
+            update.Message?.Contact?.ToString() ?? "Задача из Telegram",
             update.Message?.Text);
     }
 }
