@@ -20,8 +20,13 @@ public class WebHookFunctionHandlerResponse(
     [JsonPropertyName("isBase64Encoded")]
     public bool IsBase64Encoded { get; set; } = isBase64Encoded;
 
-    public static WebHookFunctionHandlerResponse Ok(string? body)
+    public static WebHookFunctionHandlerResponse Ok(string? body = null)
     {
         return new WebHookFunctionHandlerResponse(200, body, new WebHookFunctionHandlerResponseHeaders());
+    }
+
+    public static WebHookFunctionHandlerResponse Fail(string? error = null)
+    {
+        return new WebHookFunctionHandlerResponse(500, error, new WebHookFunctionHandlerResponseHeaders());
     }
 }

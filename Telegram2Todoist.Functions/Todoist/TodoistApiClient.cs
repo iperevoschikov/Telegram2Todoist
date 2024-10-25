@@ -29,12 +29,11 @@ public class TodoistApiClient(IHttpClientFactory httpClientFactory)
         var httpClient = httpClientFactory.CreateClient(HttpClientName);
         var content = new StringContent(
             JsonSerializer.Serialize(
-                new TodoistTask
-                {
-                    ProjectId = projectId,
-                    Content = title,
-                    Description = description,
-                }),
+                new TodoistTask(
+                    id: null,
+                    content: title,
+                    description,
+                    projectId)),
             Encoding.UTF8,
             "application/json");
 

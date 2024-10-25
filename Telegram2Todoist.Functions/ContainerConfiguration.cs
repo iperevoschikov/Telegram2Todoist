@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Telegram.Bot;
 using Telegram2Todoist.Functions.Todoist;
 
 namespace Telegram2Todoist.Functions;
@@ -8,10 +9,8 @@ public static class ContainerConfiguration
 {
     public static IServiceProvider ConfigureServices()
     {
-        var todoistApiToken = Environment.GetEnvironmentVariable("TODOIST_API_TOKEN");
-
-        if (string.IsNullOrEmpty(todoistApiToken))
-            throw new Exception("Todoist api token not found");
+        var todoistApiToken = GetConfigurationValue("TODOIST_API_TOKEN");
+        var telegramAccessToken = GetConfigurationValue("TG_ACCESS_TOKEN");
 
         var services = new ServiceCollection();
         services
@@ -23,7 +22,18 @@ public static class ContainerConfiguration
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {todoistApiToken}");
             });
         services
-            .AddSingleton<TodoistApiClient>();
+            .AddSingleton<TodoistApiClient>()
+            .AddSingleton(new TelegramBotClient(telegramAccessToken));
         return services.BuildServiceProvider();
+    }
+
+    private static string GetConfigurationValue(string name)
+    {
+        var value = Environment.GetEnvironmentVariable(name);
+
+        if (string.IsNullOrEmpty(value))
+            throw new Exception($"{name} not found");
+
+        return value;
     }
 }

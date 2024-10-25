@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram2Todoist.Functions.Todoist;
 using Yandex.Cloud.Functions;
@@ -16,34 +17,48 @@ public class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerRequest, 
         try
         {
             HandleAsync(request).GetAwaiter().GetResult();
-            return WebHookFunctionHandlerResponse.Ok(null);
+            return WebHookFunctionHandlerResponse.Ok();
         }
         catch (Exception e)
         {
             Console.Error.WriteLine($"Exception occured: {e.Message}, StackTrace: {e.StackTrace}");
-            return WebHookFunctionHandlerResponse.Ok(null);
+            return WebHookFunctionHandlerResponse.Fail();
         }
     }
 
     private static async Task HandleAsync(WebHookFunctionHandlerRequest request)
     {
         var serviceProvider = ContainerConfiguration.ConfigureServices();
+        var telegramClient = serviceProvider.GetService<ITelegramBotClient>();
         var logger = serviceProvider.GetRequiredService<ILogger<WebHookFunctionHandler>>();
         var todoistApiClient = serviceProvider.GetRequiredService<TodoistApiClient>();
-
         logger.LogInformation("Received webhook update: {Update}", request.Body);
         var update = JsonConvert.DeserializeObject<Update>(request.Body)!;
 
-        var inbox = (await todoistApiClient.GetProjects()).FirstOrDefault(p => p.IsInboxProject);
-        if (inbox == null)
-            throw new Exception("Inbox project not found");
+        try
+        {
+            var inbox = (await todoistApiClient.GetProjects())
+                .FirstOrDefault(p => p.IsInboxProject);
 
-        await todoistApiClient.CreateTaskAsync(
-            inbox.Id,
-            BuildContactName(update.Message?.ForwardFrom)
-            ?? BuildContactName(update.Message?.From)
-            ?? "Задача из Telegram",
-            update.Message?.Text);
+            if (inbox == null)
+                throw new Exception("Inbox project not found");
+
+            await todoistApiClient.CreateTaskAsync(
+                inbox.Id,
+                BuildContactName(update.Message?.ForwardFrom)
+                ?? BuildContactName(update.Message?.From)
+                ?? "Задача из Telegram",
+                update.Message?.Text);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Exception occured {Message}", e.Message);
+
+            await telegramClient!.SendTextMessageAsync(
+                update.Message!.Chat.Id,
+                "Не смог создать задачу",
+                replyToMessageId: update.Message.MessageId);
+        }
     }
 
     [ContractAnnotation("null => null;notnull=>notnull")]
