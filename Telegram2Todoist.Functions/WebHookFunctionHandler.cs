@@ -40,7 +40,17 @@ public class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerRequest, 
 
         await todoistApiClient.CreateTaskAsync(
             inbox.Id,
-            update.Message?.Contact?.ToString() ?? "Задача из Telegram",
+            BuildContactName(update.Message?.ForwardFrom)
+            ?? BuildContactName(update.Message?.From)
+            ?? "Задача из Telegram",
             update.Message?.Text);
+    }
+
+    [ContractAnnotation("null => null;notnull=>notnull")]
+    private static string? BuildContactName(User? user)
+    {
+        return user == null
+            ? null
+            : $"{user.FirstName} {user.LastName}";
     }
 }
