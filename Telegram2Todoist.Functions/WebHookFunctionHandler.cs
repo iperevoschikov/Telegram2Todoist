@@ -21,7 +21,7 @@ public class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerRequest, 
         }
         catch (Exception e)
         {
-            Console.Error.WriteLine($"Exception occured: {e.Message}, StackTrace: {e.StackTrace}");
+            Console.Error.WriteLine($"Exception occurred: {e.Message}, StackTrace: {e.StackTrace}");
             return WebHookFunctionHandlerResponse.Fail();
         }
     }
@@ -52,7 +52,7 @@ public class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerRequest, 
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Exception occured {Message}", e.Message);
+            logger.LogError(e, "Exception occurred {Message}", e.Message);
 
             await telegramClient!.SendTextMessageAsync(
                 update.Message!.Chat.Id,
