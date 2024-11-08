@@ -6,8 +6,11 @@ namespace Telegram2Todoist.Functions;
 
 public static class TelegramMessageEntitiesFormatter
 {
-    public static string ToMarkdown(Message message)
+    public static string? ToMarkdown(Message? message)
     {
+        if (message?.Text == null)
+            return null;
+
         var result = new StringBuilder(message.Text);
         if (message.Entities != null)
         {

@@ -48,7 +48,7 @@ public class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerRequest, 
                 BuildContactName(update.Message?.ForwardFrom)
                 ?? BuildContactName(update.Message?.From)
                 ?? "Задача из Telegram",
-                update.Message?.Text,
+                TelegramMessageEntitiesFormatter.ToMarkdown(update.Message) ?? "Без текста сообщения",
                 DateOnly.FromDateTime(DateTime.UtcNow.AddHours(5)));
         }
         catch (Exception e)
