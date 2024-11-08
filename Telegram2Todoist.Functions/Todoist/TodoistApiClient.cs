@@ -24,7 +24,7 @@ public class TodoistApiClient(IHttpClientFactory httpClientFactory)
         return projects;
     }
 
-    public async Task CreateTaskAsync(string projectId, string title, string? description)
+    public async Task CreateTaskAsync(string projectId, string title, string? description, DateOnly dueDate)
     {
         var httpClient = httpClientFactory.CreateClient(HttpClientName);
         var content = new StringContent(
@@ -33,7 +33,8 @@ public class TodoistApiClient(IHttpClientFactory httpClientFactory)
                     id: null,
                     content: title,
                     description,
-                    projectId)),
+                    projectId,
+                    dueDate.ToString("yyyy-MM-dd"))),
             Encoding.UTF8,
             "application/json");
 
