@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System.Text.RegularExpressions;
+using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -46,6 +47,9 @@ public class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerRequest, 
             await todoistApiClient.CreateTaskAsync(
                 inbox.Id,
                 BuildContactName(update.Message?.ForwardFrom)
+                ?? (update.Message?.ForwardSenderName == null
+                    ? null
+                    : Regex.Unescape(update.Message?.ForwardSenderName!))
                 ?? BuildContactName(update.Message?.From)
                 ?? "Задача из Telegram",
                 TelegramMessageEntitiesFormatter.ToMarkdown(update.Message) ?? "Без текста сообщения",
