@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.RegularExpressions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -11,7 +12,7 @@ public static class TelegramMessageEntitiesFormatter
         if (message?.Text == null)
             return null;
 
-        var result = new StringBuilder(message.Text);
+        var result = new StringBuilder(Regex.Unescape(message.Text));
         if (message.Entities != null)
         {
             var entities = message
