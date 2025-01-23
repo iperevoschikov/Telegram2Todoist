@@ -22,7 +22,9 @@ public class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerRequest, 
         }
         catch (Exception e)
         {
-            Console.Error.WriteLine($"Exception occurred: {e.Message}, StackTrace: {e.StackTrace}");
+            Console
+                .Error
+                .WriteLine($"Exception occurred: {e.Message}, StackTrace: {e.StackTrace}");
             return WebHookFunctionHandlerResponse.Fail();
         }
     }

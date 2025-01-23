@@ -9,23 +9,28 @@ public static class TelegramMessageEntitiesFormatter
 {
     public static string? ToMarkdown(Message? message)
     {
-        if (message?.Text == null)
-            return null;
-
-        var result = new StringBuilder(Regex.Unescape(message.Text));
-        if (message.Entities != null)
+        var result = new StringBuilder();
+        if (message?.Text != null)
         {
-            var entities = message
-                .Entities
-                //Сортируем по убыванию, чтобы не сбивались офсеты при форматировании
-                .OrderByDescending(e => e.Offset);
-
-            foreach (var entity in entities)
+            result.AppendLine(Regex.Unescape(message.Text));
+            if (message.Entities != null)
             {
-                Format(result, entity);
+                var entities = message
+                    .Entities
+                    //Сортируем по убыванию, чтобы не сбивались офсеты при форматировании
+                    .OrderByDescending(e => e.Offset);
+
+                foreach (var entity in entities)
+                {
+                    Format(result, entity);
+                }
             }
         }
 
+        if (message?.Caption != null)
+        {
+            result.AppendLine(Regex.Unescape(message.Caption));
+        }
         return result.ToString();
     }
 
