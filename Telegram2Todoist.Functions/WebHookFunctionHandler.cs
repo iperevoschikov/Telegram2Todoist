@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Google.Cloud.Firestore;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,8 +12,10 @@ using Yandex.Cloud.Functions;
 namespace Telegram2Todoist.Functions;
 
 [PublicAPI]
-public class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerRequest, WebHookFunctionHandlerResponse>
+public partial class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerRequest, WebHookFunctionHandlerResponse>
 {
+    private const string TodoistApiTokenFieldName = "todoist_api_token";
+
     public WebHookFunctionHandlerResponse FunctionHandler(WebHookFunctionHandlerRequest request, Context context)
     {
         try
@@ -32,39 +35,100 @@ public class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerRequest, 
     private static async Task HandleAsync(WebHookFunctionHandlerRequest request)
     {
         var serviceProvider = ContainerConfiguration.ConfigureServices();
-        var telegramClient = serviceProvider.GetService<ITelegramBotClient>();
+        var telegramClient = serviceProvider.GetRequiredService<ITelegramBotClient>();
+        var firestoreDb = serviceProvider.GetRequiredService<FirestoreDb>();
         var logger = serviceProvider.GetRequiredService<ILogger<WebHookFunctionHandler>>();
-        var todoistApiClient = serviceProvider.GetRequiredService<TodoistApiClient>();
+        var todoistServiceFactory = serviceProvider.GetRequiredService<TodoistServiceFactory>();
         logger.LogInformation("Received webhook update: {Update}", request.Body);
+
         var update = JsonConvert.DeserializeObject<Update>(request.Body)!;
+        var message = update.Message;
 
         try
         {
-            var inbox = (await todoistApiClient.GetProjects())
-                .FirstOrDefault(p => p.IsInboxProject);
+            if (message == null)
+                throw new NullReferenceException("Message is null");
+            if (message.From?.Id == null)
+                throw new NullReferenceException("From is null");
 
-            if (inbox == null)
-                throw new Exception("Inbox project not found");
+            var userId = message.From.Id.ToString();
+            var userDocumentReference = firestoreDb
+                .Collection("users")
+                .Document(userId);
 
-            await todoistApiClient.CreateTaskAsync(
-                inbox.Id,
-                BuildContactName(update.Message?.ForwardFrom)
-                ?? (update.Message?.ForwardSenderName == null
-                    ? null
-                    : Regex.Unescape(update.Message?.ForwardSenderName!))
-                ?? BuildContactName(update.Message?.From)
-                ?? "Задача из Telegram",
-                TelegramMessageEntitiesFormatter.ToMarkdown(update.Message) ?? "Без текста сообщения",
-                DateOnly.FromDateTime(DateTime.UtcNow.AddHours(5)));
+            var user = await userDocumentReference.GetSnapshotAsync();
+
+            if (user == null)
+            {
+                var probablyToken = message.Text;
+                if (!string.IsNullOrEmpty(probablyToken)
+                    && await IsValidTodoistApiToken(
+                        serviceProvider.GetRequiredService<TodoistApiClientFactory>(),
+                        probablyToken))
+                {
+                    await userDocumentReference.SetAsync(new Dictionary<string, object>
+                    {
+                        [TodoistApiTokenFieldName] = probablyToken,
+                    });
+
+                    await telegramClient.SendTextMessageAsync(
+                        message.Chat.Id,
+                        "Токен успешно сохранён",
+                        replyToMessageId: message.MessageId);
+
+                    return;
+                }
+
+                await telegramClient.SendTextMessageAsync(message.Chat.Id,
+                    "Для работы необходим api-токен todoist.\n" +
+                    "Получить токен можно так: Настройки -> Интеграции -> Для разработчиков.\n" +
+                    "Пришлите ваш токен отдельным сообщением.");
+
+                return;
+            }
+
+            var title = BuildContactName(update.Message?.ForwardFrom)
+                        ?? (update.Message?.ForwardSenderName == null
+                            ? null
+                            : Regex.Unescape(update.Message?.ForwardSenderName!))
+                        ?? BuildContactName(update.Message?.From)
+                        ?? "Задача из Telegram";
+            var description = TelegramMessageEntitiesFormatter.ToMarkdown(update.Message) ?? "Без текста сообщения";
+
+            await todoistServiceFactory
+                .Create(user.GetValue<string>(TodoistApiTokenFieldName))
+                .CreateTask(title, description);
         }
         catch (Exception e)
         {
             logger.LogError(e, "Exception occurred {Message}", e.Message);
 
-            await telegramClient!.SendTextMessageAsync(
-                update.Message!.Chat.Id,
+            await telegramClient.SendTextMessageAsync(
+                message!.Chat.Id,
                 "Не смог создать задачу",
-                replyToMessageId: update.Message.MessageId);
+                replyToMessageId: message.MessageId);
+        }
+    }
+
+    [GeneratedRegex("^[a-zA-Z0-9]+$")]
+    private static partial Regex TodoistApiTokenRegex();
+
+    private static async Task<bool> IsValidTodoistApiToken(
+        TodoistApiClientFactory todoistApiClientFactory,
+        string probablyToken)
+    {
+        if (!TodoistApiTokenRegex().IsMatch(probablyToken))
+            return false;
+
+        var client = todoistApiClientFactory.Create(probablyToken);
+        try
+        {
+            await client.GetProjects();
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 

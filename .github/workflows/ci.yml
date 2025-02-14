@@ -44,8 +44,8 @@ jobs:
     env:
       YC_FOLDER_ID: b1ghjemjicrojm2tmnfc
       YC_SERVICE_ACCOUNT_ID: aje8bq8bpjcvkf9k73jp
-      TODOIST_API_TOKEN: ${{ secrets.TODOIST_API_TOKEN }}
       TG_ACCESS_TOKEN: ${{ secrets.TG_ACCESS_TOKEN }}
+      GOOGLE_CLOUD_JSON_CREDENTIALS: ${{secrets.GOOGLE_CLOUD_JSON_CREDENTIALS}}
 
     strategy:
       matrix:
@@ -74,5 +74,5 @@ jobs:
             --package-object-name $ZIP_FILE \
             --folder-id $YC_FOLDER_ID \
             --service-account-id $YC_SERVICE_ACCOUNT_ID \
-            --environment TODOIST_API_TOKEN=$TODOIST_API_TOKEN \
-            --environment TG_ACCESS_TOKEN=$TG_ACCESS_TOKEN
+            --environment TG_ACCESS_TOKEN=$TG_ACCESS_TOKEN \
+            --environment GOOGLE_CLOUD_JSON_CREDENTIALS=$GOOGLE_CLOUD_JSON_CREDENTIALS
