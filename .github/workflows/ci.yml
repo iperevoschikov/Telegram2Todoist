@@ -64,7 +64,7 @@ jobs:
           which yc
           yc --version
           yc config set token ${{ secrets.YC_OAUTH_TOKEN }}
-          export ESCAPED_GOOGLE_CLOUD_JSON_CREDENTIALS=$(echo "$GOOGLE_CLOUD_JSON_CREDENTIALS" | jq -sRr @json)
+          export ESCAPED_GOOGLE_CLOUD_JSON_CREDENTIALS=$(echo "$GOOGLE_CLOUD_JSON_CREDENTIALS" | jq -с '.')
           yc serverless function version create \
             --function-id ${{ matrix.YC_FUNCTION_ID }} \
             --runtime dotnet8 \
@@ -76,4 +76,4 @@ jobs:
             --folder-id $YC_FOLDER_ID \
             --service-account-id $YC_SERVICE_ACCOUNT_ID \
             --environment TG_ACCESS_TOKEN=$TG_ACCESS_TOKEN \
-            --environment GOOGLE_CLOUD_JSON_CREDENTIALS=$ESCAPED_GOOGLE_CLOUD_JSON_CREDENTIALS
+            --environment GOOGLE_CLOUD_JSON_CREDENTIALS="$GOOGLE_CLOUD_JSON_CREDENTIALS"
