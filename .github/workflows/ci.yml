@@ -24,19 +24,18 @@ jobs:
 
       - name: Build project
         run: dotnet publish Telegram2Todoist.Functions -c Release -o output
-
-      - name: Set up AWS CLI and upload release
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Zip binaries
         run: |
-          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set default.region ru-central1
-          aws configure set default.s3.endpoint_url https://storage.yandexcloud.net
           cd output 
           zip -r $ZIP_FILE *
-          aws s3 cp $ZIP_FILE s3://$YC_BUCKET_NAME/$ZIP_FILE --acl private --endpoint-url https://storage.yandexcloud.net
+
+      - name: Install YC
+        uses: iperevoschikov/setup-yc@821c1f6cf4eac357e1993b5ebf297d49a3881730
+        with:
+          oauthToken: ${{ secrets.YC_OAUTH_TOKEN }}
+
+      - name: Upload release
+        run: yc storage s3api put-object --bucket $YC_BUCKET_NAME --acl private --key $ZIP_FILE --body output/$ZIP_FILE
 
   deploy:
     runs-on: ubuntu-latest
@@ -54,16 +53,12 @@ jobs:
             YC_FUNCTION_ENTRYPOINT: "Telegram2Todoist.Functions.WebHookFunctionHandler"
 
     steps:
-      - name: Install Yandex Cloud CLI and deploy # todo move to docker image
+      - name: Install YC
+        uses: iperevoschikov/setup-yc@821c1f6cf4eac357e1993b5ebf297d49a3881730
+        with:
+          oauthToken: ${{ secrets.YC_OAUTH_TOKEN }}
+      - name: Deploy YC serverless function
         run: |
-          curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-          echo 'export PATH=$HOME/yandex-cloud/bin:$PATH' >> $GITHUB_ENV
-          export PATH=$HOME/yandex-cloud/bin:$PATH
-          source $GITHUB_ENV
-          source ~/.bashrc
-          which yc
-          yc --version
-          yc config set token ${{ secrets.YC_OAUTH_TOKEN }}
           yc serverless function version create \
             --function-id ${{ matrix.YC_FUNCTION_ID }} \
             --runtime dotnet8 \
