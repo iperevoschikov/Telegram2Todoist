@@ -64,7 +64,6 @@ jobs:
           which yc
           yc --version
           yc config set token ${{ secrets.YC_OAUTH_TOKEN }}
-          export ESCAPED_GOOGLE_CLOUD_JSON_CREDENTIALS=$(echo "$GOOGLE_CLOUD_JSON_CREDENTIALS" | jq -с '.')
           yc serverless function version create \
             --function-id ${{ matrix.YC_FUNCTION_ID }} \
             --runtime dotnet8 \
