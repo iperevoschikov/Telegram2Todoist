@@ -46,7 +46,7 @@ jobs:
       YC_FOLDER_ID: b1ghjemjicrojm2tmnfc
       YC_SERVICE_ACCOUNT_ID: aje8bq8bpjcvkf9k73jp
       TG_ACCESS_TOKEN: ${{ secrets.TG_ACCESS_TOKEN }}
-      GOOGLE_CLOUD_JSON_CREDENTIALS: ${{secrets.GOOGLE_CLOUD_JSON_CREDENTIALS}}
+      GOOGLE_CLOUD_JSON_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_JSON_CREDENTIALS }}
 
     strategy:
       matrix:
@@ -76,4 +76,4 @@ jobs:
             --folder-id $YC_FOLDER_ID \
             --service-account-id $YC_SERVICE_ACCOUNT_ID \
             --environment TG_ACCESS_TOKEN=$TG_ACCESS_TOKEN \
-            --environment "GOOGLE_CLOUD_JSON_CREDENTIALS='$GOOGLE_CLOUD_JSON_CREDENTIALS'"
+            --environment GOOGLE_CLOUD_JSON_CREDENTIALS=$GOOGLE_CLOUD_JSON_CREDENTIALS

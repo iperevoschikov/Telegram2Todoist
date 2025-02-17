@@ -11,7 +11,10 @@ public static class ContainerConfiguration
     public static IServiceProvider ConfigureServices()
     {
         var telegramAccessToken = GetConfigurationValue("TG_ACCESS_TOKEN");
-        var googleCloudJsonCredentials = GetConfigurationValue("GOOGLE_CLOUD_JSON_CREDENTIALS");
+        var googleCloudJsonCredentials =
+            System.Text.Encoding.UTF8.GetString(
+                Convert.FromBase64String(
+                    GetConfigurationValue("GOOGLE_CLOUD_JSON_CREDENTIALS")));
 
         var services = new ServiceCollection();
         services
