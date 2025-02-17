@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Google.Cloud.Firestore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram2Todoist.Functions.Todoist;
@@ -9,8 +10,11 @@ public static class ContainerConfiguration
 {
     public static IServiceProvider ConfigureServices()
     {
-        var todoistApiToken = GetConfigurationValue("TODOIST_API_TOKEN");
         var telegramAccessToken = GetConfigurationValue("TG_ACCESS_TOKEN");
+        var googleCloudJsonCredentials =
+            System.Text.Encoding.UTF8.GetString(
+                Convert.FromBase64String(
+                    GetConfigurationValue("GOOGLE_CLOUD_JSON_CREDENTIALS")));
 
         var services = new ServiceCollection();
         services
@@ -19,11 +23,20 @@ public static class ContainerConfiguration
             {
                 client.BaseAddress = new Uri("https://api.todoist.com/rest/v2/");
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {todoistApiToken}");
             });
+
         services
-            .AddSingleton<TodoistApiClient>()
-            .AddSingleton(new TelegramBotClient(telegramAccessToken));
+            .AddSingleton(
+                new FirestoreDbBuilder
+                    {
+                        ProjectId = "telegram2todoist",
+                        DatabaseId = "telegram2todoist",
+                        JsonCredentials = googleCloudJsonCredentials,
+                    }
+                    .Build())
+            .AddSingleton<TodoistApiClientFactory>()
+            .AddSingleton<TodoistServiceFactory>()
+            .AddSingleton<ITelegramBotClient>(new TelegramBotClient(telegramAccessToken));
         return services.BuildServiceProvider();
     }
 

@@ -5,13 +5,20 @@ using JetBrains.Annotations;
 namespace Telegram2Todoist.Functions.Todoist;
 
 [UsedImplicitly]
-public class TodoistApiClient(IHttpClientFactory httpClientFactory)
+public class TodoistApiClient(IHttpClientFactory httpClientFactory, string apiToken)
 {
     public const string HttpClientName = "todoist";
 
+    private HttpClient CreateHttpClient()
+    {
+        var httpClient = httpClientFactory.CreateClient(HttpClientName);
+        httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiToken}");
+        return httpClient;
+    }
+
     public async Task<TodoistProject[]> GetProjects()
     {
-        var client = httpClientFactory.CreateClient(HttpClientName);
+        var client = CreateHttpClient();
         var response = await client.GetAsync("projects");
         response.EnsureSuccessStatusCode();
         var text = await response.Content.ReadAsStringAsync();
@@ -26,7 +33,7 @@ public class TodoistApiClient(IHttpClientFactory httpClientFactory)
 
     public async Task CreateTaskAsync(string projectId, string title, string? description, DateOnly dueDate)
     {
-        var httpClient = httpClientFactory.CreateClient(HttpClientName);
+        var httpClient = CreateHttpClient();
         var content = new StringContent(
             JsonSerializer.Serialize(
                 new TodoistTask(
