@@ -36,7 +36,7 @@ public static class ContainerConfiguration
                     .Build())
             .AddSingleton<TodoistApiClientFactory>()
             .AddSingleton<TodoistServiceFactory>()
-            .AddSingleton(new TelegramBotClient(telegramAccessToken));
+            .AddSingleton<ITelegramBotClient>(new TelegramBotClient(telegramAccessToken));
         return services.BuildServiceProvider();
     }
 
