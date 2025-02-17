@@ -58,7 +58,7 @@ public partial class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerR
 
             var user = await userDocumentReference.GetSnapshotAsync();
 
-            if (user == null)
+            if (!user.Exists)
             {
                 var probablyToken = message.Text;
                 if (!string.IsNullOrEmpty(probablyToken)
