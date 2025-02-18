@@ -39,9 +39,9 @@ public partial class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerR
         var firestoreDb = serviceProvider.GetRequiredService<FirestoreDb>();
         var logger = serviceProvider.GetRequiredService<ILogger<WebHookFunctionHandler>>();
         var todoistServiceFactory = serviceProvider.GetRequiredService<TodoistServiceFactory>();
-        logger.LogInformation("Received webhook update: {Update}", request.Body);
 
         var update = JsonConvert.DeserializeObject<Update>(request.Body)!;
+        logger.LogInformation("Received webhook update: {Update},", update.Id);
         var message = update.Message;
 
         try
