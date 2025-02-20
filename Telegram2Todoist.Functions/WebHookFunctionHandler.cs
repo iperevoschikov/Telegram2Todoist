@@ -42,6 +42,12 @@ public partial class WebHookFunctionHandler : YcFunction<WebHookFunctionHandlerR
 
         var update = JsonConvert.DeserializeObject<Update>(request.Body)!;
         logger.LogInformation("Received webhook update: {Update},", update.Id);
+
+        if (update.Message?.Text?.StartsWith("DEBUG") ?? false)
+        {
+            logger.LogInformation("Request body {Body}", request.Body);
+        }
+
         var message = update.Message;
 
         try
