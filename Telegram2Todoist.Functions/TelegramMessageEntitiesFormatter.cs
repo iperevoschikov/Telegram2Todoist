@@ -5,14 +5,14 @@ using Telegram.Bot.Types.Enums;
 
 namespace Telegram2Todoist.Functions;
 
-public static class TelegramMessageEntitiesFormatter
+public static partial class TelegramMessageEntitiesFormatter
 {
-    public static string? ToMarkdown(Message? message)
+    public static string ToMarkdown(Message? message)
     {
         var result = new StringBuilder();
         if (message?.Text != null)
         {
-            result.AppendLine(Regex.Unescape(message.Text));
+            result.AppendLine(DecodeUnicodeEscapeSequences(message.Text));
             if (message.Entities != null)
             {
                 var entities = message
@@ -29,8 +29,9 @@ public static class TelegramMessageEntitiesFormatter
 
         if (message?.Caption != null)
         {
-            result.AppendLine(Regex.Unescape(message.Caption));
+            result.AppendLine(DecodeUnicodeEscapeSequences(message.Caption));
         }
+
         return result.ToString();
     }
 
@@ -64,7 +65,6 @@ public static class TelegramMessageEntitiesFormatter
         }
     }
 
-
     private static void WrapFragment(StringBuilder message,
         MessageEntity messageEntity,
         string prepend,
@@ -73,4 +73,12 @@ public static class TelegramMessageEntitiesFormatter
         message.Insert(messageEntity.Offset + messageEntity.Length, append);
         message.Insert(messageEntity.Offset, prepend);
     }
+
+    private static string DecodeUnicodeEscapeSequences(string input)
+    {
+        return UnicodeEscapeSequenceRegex().Replace(input, match => char.ConvertFromUtf32(Convert.ToInt32(match.Groups[1].Value, 16)));
+    }
+
+    [GeneratedRegex(@"\\u([0-9A-Fa-f]{4})")]
+    private static partial Regex UnicodeEscapeSequenceRegex();
 }
