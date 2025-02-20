@@ -8,7 +8,7 @@ namespace Telegram2Todoist.Tests;
 public class TelegramMessageEntitiesFormatterTests
 {
     [Test]
-    public void Test()
+    public void TestMessageWithEntities()
     {
         var message = new Message
         {
@@ -57,6 +57,17 @@ public class TelegramMessageEntitiesFormatterTests
         actual
             .Should()
             .Be("Тест выделения **жирным**, *курсивом*, ~зачеркнуто~ и _подчеркнуто_," +
-                " а также [ссылка](https://google.com/)");
+                " а также [ссылка](https://google.com/)\r\n");
+    }
+
+    [Test]
+    public void TestTextWithSlashes()
+    {
+        Action formatting = () => TelegramMessageEntitiesFormatter.ToMarkdown(new Message
+        {
+            Text = @"\\RA-FS\ra-joint\Kontur.Recognition\_ToPerevoschikova"
+        });
+
+        formatting.Should().NotThrow();
     }
 }
