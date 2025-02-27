@@ -3,7 +3,9 @@ using System.Web;
 
 namespace Telegram2Todoist.Functions.Todoist;
 
-public class TodoistAuthClient(IHttpClientFactory httpClientFactory, string clientId, string clientSecret)
+public class TodoistAuthClient(
+    IHttpClientFactory httpClientFactory, 
+    TodoistAuthClientSettings settings)
 {
     public const string HttpClientName = "todoist_oauth";
 
@@ -11,7 +13,7 @@ public class TodoistAuthClient(IHttpClientFactory httpClientFactory, string clie
     {
         var uriBuilder = new UriBuilder("https://todoist.com/oauth/authorize");
         var query = HttpUtility.ParseQueryString(uriBuilder.Query);
-        query["client_id"] = clientId;
+        query["client_id"] = settings.ClientId;
         query["scope"] = "task:add";
         query["state"] = state;
         uriBuilder.Query = query.ToString();
@@ -24,8 +26,8 @@ public class TodoistAuthClient(IHttpClientFactory httpClientFactory, string clie
         client.BaseAddress = new Uri("https://todoist.com/oauth/access_token");
         var response = await client.PostAsync("", new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            ["client_id"] = clientId,
-            ["client_secret"] = clientSecret,
+            ["client_id"] = settings.ClientId,
+            ["client_secret"] = settings.ClientSecret,
             ["code"] = code,
         }));
         response.EnsureSuccessStatusCode();

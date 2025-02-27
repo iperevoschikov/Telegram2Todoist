@@ -12,7 +12,6 @@ public class TodoistService(TodoistApiClientFactory todoistApiClientFactory, str
         if (inbox == null)
             throw new Exception("Inbox project not found");
 
-
         await todoistApiClient.CreateTaskAsync(
             inbox.Id,
             title,

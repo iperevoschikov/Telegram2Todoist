@@ -42,10 +42,10 @@ public static class ContainerConfiguration
             .AddSingleton<AuthStateStorage>()
             .AddSingleton<WebHookAsyncFunctionHandler>()
             .AddSingleton<OAuthAsyncFunctionHandler>()
-            .AddSingleton(p => new TodoistAuthClient(
-                p.GetRequiredKeyedService<IHttpClientFactory>(TodoistAuthClient.HttpClientName),
+            .AddSingleton(new TodoistAuthClientSettings(
                 todoistAuthClientId,
                 todoistAuthClientSecret))
+            .AddSingleton<TodoistAuthClient>()
             .AddSingleton<TodoistApiClientFactory>()
             .AddSingleton<TodoistServiceFactory>()
             .AddSingleton<ITelegramBotClient>(new TelegramBotClient(telegramAccessToken));
