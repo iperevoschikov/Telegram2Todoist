@@ -48,6 +48,7 @@ jobs:
       TG_ACCESS_TOKEN: ${{ secrets.TG_ACCESS_TOKEN }}
       GOOGLE_CLOUD_JSON_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_JSON_CREDENTIALS }}
       TODOIST_AUTH_CLIENT_ID: ${{ secrets.TODOIST_AUTH_CLIENT_ID }}
+      TODOIST_AUTH_CLIENT_SECRET: ${{ secrets.TODOIST_AUTH_CLIENT_SECRET }}
 
     strategy:
       matrix:
@@ -80,4 +81,5 @@ jobs:
             --service-account-id $YC_SERVICE_ACCOUNT_ID \
             --environment TG_ACCESS_TOKEN=$TG_ACCESS_TOKEN \
             --environment GOOGLE_CLOUD_JSON_CREDENTIALS=$GOOGLE_CLOUD_JSON_CREDENTIALS \
-            --environment TODOIST_AUTH_CLIENT_ID=TODOIST_AUTH_CLIENT_ID
+            --environment TODOIST_AUTH_CLIENT_ID=$TODOIST_AUTH_CLIENT_ID \
+            --environment TODOIST_AUTH_CLIENT_SECRET=$TODOIST_AUTH_CLIENT_SECRET
