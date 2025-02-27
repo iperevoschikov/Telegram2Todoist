@@ -79,5 +79,5 @@ jobs:
             --folder-id $YC_FOLDER_ID \
             --service-account-id $YC_SERVICE_ACCOUNT_ID \
             --environment TG_ACCESS_TOKEN=$TG_ACCESS_TOKEN \
-            --environment GOOGLE_CLOUD_JSON_CREDENTIALS=$GOOGLE_CLOUD_JSON_CREDENTIALS
+            --environment GOOGLE_CLOUD_JSON_CREDENTIALS=$GOOGLE_CLOUD_JSON_CREDENTIALS \
             --environment TODOIST_AUTH_CLIENT_ID=TODOIST_AUTH_CLIENT_ID
