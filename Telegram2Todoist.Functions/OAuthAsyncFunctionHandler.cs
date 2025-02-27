@@ -13,7 +13,7 @@ public class OAuthAsyncFunctionHandler(
 {
     public async Task<FunctionHandlerResponse> HandleAsync(FunctionHandlerRequest request)
     {
-        if (!request.Query.TryGetValue("code", out var code) || !request.Query.TryGetValue("state", out var state))
+        if (!request.QueryStringParameters.TryGetValue("code", out var code) || !request.QueryStringParameters.TryGetValue("state", out var state))
             return FunctionHandlerResponse.BadRequest();
 
         var userId = await authStateStorage.GetUserIdForState(state);

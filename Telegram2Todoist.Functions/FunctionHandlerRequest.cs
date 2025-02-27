@@ -7,7 +7,7 @@ namespace Telegram2Todoist.Functions;
 public class FunctionHandlerRequest(
     string httpMethod,
     string body,
-    Dictionary<string, string> queryStringParameters)
+    Dictionary<string, string> queryStringParametersStringParameters)
 {
     [JsonPropertyName("httpMethod")]
     public string HttpMethod { get; init; } = httpMethod;
@@ -16,5 +16,5 @@ public class FunctionHandlerRequest(
     public string Body { get; init; } = body;
 
     [JsonPropertyName("queryStringParameters")]
-    public Dictionary<string, string> Query { get; init; } = queryStringParameters;
+    public Dictionary<string, string> QueryStringParameters { get; init; } = queryStringParametersStringParameters;
 }
