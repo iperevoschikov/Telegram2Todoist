@@ -15,7 +15,7 @@ public class WebHookAsyncFunctionHandler(
     ITelegramBotClient telegramClient,
     UsersStorage usersStorage,
     ILogger<WebHookFunctionHandler> logger,
-    TodoistServiceFactory todoistServiceFactory,
+    TodoistApiClientFactory todoistApiClientFactory,
     TodoistAuthClient todoistAuthClient,
     AuthStateStorage authStateStorage
 ) : IAsyncFunctionHandler
@@ -65,9 +65,12 @@ public class WebHookAsyncFunctionHandler(
                         ?? "Задача из Telegram";
             var description = TelegramMessageEntitiesFormatter.ToMarkdown(update.Message);
 
-            await todoistServiceFactory
+            await todoistApiClientFactory
                 .Create(authToken)
-                .CreateTask(title, description);
+                .CreateTaskAsync(
+                    title,
+                    description,
+                    DateOnly.FromDateTime(DateTime.UtcNow.AddHours(5)));
         }
         catch (Exception e)
         {
