@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
+using Telegram2Todoist.Functions.Storage;
 using Telegram2Todoist.Functions.Todoist;
 
 namespace Telegram2Todoist.Functions;
@@ -11,6 +12,8 @@ public static class ContainerConfiguration
     public static IServiceProvider ConfigureServices()
     {
         var telegramAccessToken = GetConfigurationValue("TG_ACCESS_TOKEN");
+        var todoistAuthClientId = GetConfigurationValue("TODOIST_AUTH_CLIENT_ID");
+        var todoistAuthClientSecret = GetConfigurationValue("TODOIST_AUTH_CLIENT_SECRET");
         var googleCloudJsonCredentials =
             System.Text.Encoding.UTF8.GetString(
                 Convert.FromBase64String(
@@ -18,12 +21,13 @@ public static class ContainerConfiguration
 
         var services = new ServiceCollection();
         services
-            .AddLogging(b => b.AddSimpleConsole(c => c.SingleLine = true))
-            .AddHttpClient(TodoistApiClient.HttpClientName, client =>
-            {
-                client.BaseAddress = new Uri("https://api.todoist.com/rest/v2/");
-                client.DefaultRequestHeaders.Add("Accept", "application/json");
-            });
+            .AddLogging(b => b.AddSimpleConsole(c => c.SingleLine = true));
+
+        services
+            .AddHttpClient(TodoistApiClient.HttpClientName);
+
+        services
+            .AddHttpClient(TodoistAuthClient.HttpClientName);
 
         services
             .AddSingleton(
@@ -34,6 +38,14 @@ public static class ContainerConfiguration
                         JsonCredentials = googleCloudJsonCredentials,
                     }
                     .Build())
+            .AddSingleton<UsersStorage>()
+            .AddSingleton<AuthStateStorage>()
+            .AddSingleton<WebHookAsyncFunctionHandler>()
+            .AddSingleton<OAuthAsyncFunctionHandler>()
+            .AddSingleton(p => new TodoistAuthClient(
+                p.GetRequiredKeyedService<IHttpClientFactory>(TodoistAuthClient.HttpClientName),
+                todoistAuthClientId,
+                todoistAuthClientSecret))
             .AddSingleton<TodoistApiClientFactory>()
             .AddSingleton<TodoistServiceFactory>()
             .AddSingleton<ITelegramBotClient>(new TelegramBotClient(telegramAccessToken));

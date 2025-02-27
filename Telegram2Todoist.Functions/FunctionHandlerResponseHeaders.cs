@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 namespace Telegram2Todoist.Functions;
 
 [PublicAPI]
-public class WebHookFunctionHandlerResponseHeaders(string contentType = "application/json")
+public class FunctionHandlerResponseHeaders(string contentType = "application/json")
 {
     [JsonPropertyName("Content-Type")]
     public string ContentType { get; set; } = contentType;

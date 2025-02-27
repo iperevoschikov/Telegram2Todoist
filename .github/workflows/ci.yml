@@ -47,12 +47,15 @@ jobs:
       YC_SERVICE_ACCOUNT_ID: aje8bq8bpjcvkf9k73jp
       TG_ACCESS_TOKEN: ${{ secrets.TG_ACCESS_TOKEN }}
       GOOGLE_CLOUD_JSON_CREDENTIALS: ${{ secrets.GOOGLE_CLOUD_JSON_CREDENTIALS }}
+      TODOIST_AUTH_CLIENT_ID: ${{ secrets.TODOIST_AUTH_CLIENT_ID }}
 
     strategy:
       matrix:
         include:
           - YC_FUNCTION_ID: d4e0a03vmqaj555hlqm8
             YC_FUNCTION_ENTRYPOINT: "Telegram2Todoist.Functions.WebHookFunctionHandler"
+          - YC_FUNCTION_ID: d4ejltb3ev98o35eaof3
+            YC_FUNCTION_ENTRYPOINT: "Telegram2Todoist.Functions.OAuthFunctionHandler"
 
     steps:
       - name: Install Yandex Cloud CLI and deploy # todo move to docker image
@@ -77,3 +80,4 @@ jobs:
             --service-account-id $YC_SERVICE_ACCOUNT_ID \
             --environment TG_ACCESS_TOKEN=$TG_ACCESS_TOKEN \
             --environment GOOGLE_CLOUD_JSON_CREDENTIALS=$GOOGLE_CLOUD_JSON_CREDENTIALS
+            --environment TODOIST_AUTH_CLIENT_ID=TODOIST_AUTH_CLIENT_ID
