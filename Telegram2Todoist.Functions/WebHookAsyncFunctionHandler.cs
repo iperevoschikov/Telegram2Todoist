@@ -71,15 +71,21 @@ public class WebHookAsyncFunctionHandler(
                     title,
                     description,
                     DateOnly.FromDateTime(DateTime.UtcNow.AddHours(5)));
+
+            await telegramClient.SendTextMessageAsync(
+                message.Chat.Id,
+                "✔",
+                replyToMessageId: message.MessageId);
         }
         catch (Exception e)
         {
             logger.LogError(e, "Exception occurred {Message}", e.Message);
 
-            await telegramClient.SendTextMessageAsync(
-                message!.Chat.Id,
-                "Не смог создать задачу",
-                replyToMessageId: message.MessageId);
+            if (message != null)
+                await telegramClient.SendTextMessageAsync(
+                    message.Chat.Id,
+                    "Не смог создать задачу",
+                    replyToMessageId: message.MessageId);
         }
 
         return FunctionHandlerResponse.Ok();
