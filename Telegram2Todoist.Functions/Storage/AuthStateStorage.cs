@@ -26,7 +26,7 @@ public class AuthStateStorage(FirestoreDb firestoreDb)
         if (!document.Exists)
             return null;
 
-        return document.GetValue<int>(UserIdFieldName);
+        return document.GetValue<long>(UserIdFieldName);
     }
 
     private DocumentReference GetDocumentReference(string id) =>
