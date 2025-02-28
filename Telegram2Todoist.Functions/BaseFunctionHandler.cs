@@ -10,10 +10,12 @@ public abstract class BaseFunctionHandler<TAsyncHandler> : YcFunction<FunctionHa
     {
         try
         {
-            var serviceProvider = ContainerConfiguration.ConfigureServices();
-            var handler = serviceProvider.GetRequiredService<TAsyncHandler>();
-            handler.HandleAsync(request).GetAwaiter().GetResult();
-            return FunctionHandlerResponse.Ok();
+            return ContainerConfiguration
+                .ConfigureServices()
+                .GetRequiredService<TAsyncHandler>()
+                .HandleAsync(request)
+                .GetAwaiter()
+                .GetResult();
         }
         catch (Exception e)
         {
