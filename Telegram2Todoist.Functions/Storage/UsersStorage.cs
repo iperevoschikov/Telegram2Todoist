@@ -13,7 +13,7 @@ public class UsersStorage(FirestoreDb firestoreDb)
         var user = await GetDocumentReference(userId)
             .GetSnapshotAsync();
 
-        return !user.Exists
+        return !user.Exists || !user.ContainsField(TodoistApiTokenFieldName)
             ? null
             : user.GetValue<string>(TodoistApiTokenFieldName);
     }
