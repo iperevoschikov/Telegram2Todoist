@@ -13,7 +13,8 @@ public class OAuthAsyncFunctionHandler(
 {
     public async Task<FunctionHandlerResponse> HandleAsync(FunctionHandlerRequest request)
     {
-        if (!request.QueryStringParameters.TryGetValue("code", out var code) || !request.QueryStringParameters.TryGetValue("state", out var state))
+        if (!request.QueryStringParameters.TryGetValue("code", out var code) ||
+            !request.QueryStringParameters.TryGetValue("state", out var state))
             return FunctionHandlerResponse.BadRequest();
 
         var userId = await authStateStorage.GetUserIdForState(state);
@@ -22,6 +23,6 @@ public class OAuthAsyncFunctionHandler(
 
         var accessToken = await todoistAuth.ObtainAccessToken(code);
         await usersStorage.SetAccessTokenFor(userId.Value, accessToken);
-        return FunctionHandlerResponse.Ok();
+        return FunctionHandlerResponse.Redirect("https://t.me/todoist_forward_bot");
     }
 }

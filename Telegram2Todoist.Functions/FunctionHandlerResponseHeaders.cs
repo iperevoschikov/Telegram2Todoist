@@ -8,4 +8,7 @@ public class FunctionHandlerResponseHeaders(string contentType = "application/js
 {
     [JsonPropertyName("Content-Type")]
     public string ContentType { get; set; } = contentType;
+
+    [JsonPropertyName("Location")]
+    public string? Location { get; set; }
 }
