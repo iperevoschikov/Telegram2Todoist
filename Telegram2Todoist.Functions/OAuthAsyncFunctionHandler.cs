@@ -11,7 +11,7 @@ public class OAuthAsyncFunctionHandler(
     TodoistAuthClient todoistAuth,
     AuthStateStorage authStateStorage,
     UsersStorage usersStorage,
-    TelegramBotClient telegramClient,
+    ITelegramBotClient telegramClient,
     ILogger<OAuthAsyncFunctionHandler> logger
 ) : IAsyncFunctionHandler
 {
