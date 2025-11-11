@@ -7,6 +7,7 @@ namespace Telegram2Todoist.Functions.Storage;
 public class AuthStateStorage(FirestoreDb firestoreDb)
 {
     private const string UserIdFieldName = "userId";
+    private const string ExpireAtFieldName = "expireAt";
 
     public async Task<string> CreateAuthState(long userId)
     {
@@ -14,7 +15,8 @@ public class AuthStateStorage(FirestoreDb firestoreDb)
         var documentReference = GetDocumentReference(id);
         await documentReference.SetAsync(new Dictionary<string, object>
         {
-            [UserIdFieldName] = userId
+            [UserIdFieldName] = userId,
+            [ExpireAtFieldName] = Timestamp.FromDateTime(DateTime.UtcNow.AddDays(3)),
         });
         return id;
     }
