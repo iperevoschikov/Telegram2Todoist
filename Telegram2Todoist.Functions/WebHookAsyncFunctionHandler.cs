@@ -74,6 +74,19 @@ public class WebHookAsyncFunctionHandler() : WebhookFunctionHandler(HandleAsync)
                 ?? BuildContactName(update.Message?.From)
                 ?? "Задача из Telegram";
             var description = TelegramMessageEntitiesFormatter.ToMarkdown(update.Message);
+
+            if (message.ReplyMarkup != null)
+            {
+                var urls = message.ReplyMarkup.InlineKeyboard.SelectMany(r =>
+                    r.Where(b => !string.IsNullOrEmpty(b.Url))
+                        .Select(b => $"[{b.Text ?? b.Url}]({b.Url})")
+                );
+                if (urls.Any())
+                {
+                    description += "\nИзвлеченные ссылки:\n" + string.Join("\n", urls);
+                }
+            }
+
             await todoistApiClientFactory
                 .Create(authToken)
                 .CreateTaskAsync(
