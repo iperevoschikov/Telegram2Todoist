@@ -1,4 +1,4 @@
-name: Deploy Yandex Cloud Function
+name: Deploy Yandex Cloud Functions
 on:
   workflow_dispatch:
   push:
@@ -6,29 +6,22 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
-  deploy-webhook-function:
+  deploy-function:
+    name: Deploy Yandex Cloud Function — ${{ matrix.function.entrypoint }}
     uses: iperevoschikov/YandexCloudFunctions.Net.Sdk/.github/workflows/yc-cloud-function-ci-template.yml@main
+    strategy:
+      matrix:
+        function:
+          - id: "d4e0a03vmqaj555hlqm8"
+            entrypoint: "Telegram2Todoist.Functions.WebHookAsyncFunctionHandler"
+          - id: "d4ejltb3ev98o35eaof3"
+            entrypoint: "Telegram2Todoist.Functions.OAuthAsyncFunctionHandler"
     with:
       yc-bucket-name: "telegram2todoist-sources"
       yc-folder-id: "b1ghjemjicrojm2tmnfc"
       yc-service-account-id: "ajehthnvvf1et4hphmb5"
-      yc-function-id: "d4e0a03vmqaj555hlqm8"
-      yc-function-entrypoint: "Telegram2Todoist.Functions.WebHookAsyncFunctionHandler"
-      dotnet-project-name: "Telegram2Todoist.Functions"
-    secrets:
-      YC_OAUTH_TOKEN: ${{ secrets.YC_OAUTH_TOKEN }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      FUNC_ENV_VARIABLES: ${{ secrets.FUNC_ENV_VARIABLES }}
-      
-  deploy-oauth-function:
-    uses: iperevoschikov/YandexCloudFunctions.Net.Sdk/.github/workflows/yc-cloud-function-ci-template.yml@main
-    with:
-      yc-bucket-name: "telegram2todoist-sources"
-      yc-folder-id: "b1ghjemjicrojm2tmnfc"
-      yc-service-account-id: "ajehthnvvf1et4hphmb5"
-      yc-function-id: "d4ejltb3ev98o35eaof3"
-      yc-function-entrypoint: "Telegram2Todoist.Functions.OAuthAsyncFunctionHandler"
+      yc-function-id: ${{ matrix.function.id }}
+      yc-function-entrypoint: ${{ matrix.function.entrypoint }}
       dotnet-project-name: "Telegram2Todoist.Functions"
     secrets:
       YC_OAUTH_TOKEN: ${{ secrets.YC_OAUTH_TOKEN }}
