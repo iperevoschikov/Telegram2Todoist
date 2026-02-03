@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Telegram.Bot;
@@ -102,4 +103,7 @@ public class WebHookAsyncFunctionHandler() : WebhookFunctionHandler(HandleAsync)
     {
         return user == null ? null : $"{user.FirstName} {user.LastName}";
     }
+
+    protected override void ConfigureServices(IServiceCollection serviceCollection) =>
+        serviceCollection.ConfigureServices();
 }

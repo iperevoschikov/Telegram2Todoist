@@ -6,7 +6,7 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
-  deploy-bot-function:
+  deploy-webhook-function:
     uses: iperevoschikov/YandexCloudFunctions.Net.Sdk/.github/workflows/yc-cloud-function-ci-template.yml@main
     with:
       yc-bucket-name: "telegram2todoist-sources"
@@ -21,7 +21,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       FUNC_ENV_VARIABLES: ${{ secrets.FUNC_ENV_VARIABLES }}
       
-  deploy-scheduled-function:
+  deploy-oauth-function:
     uses: iperevoschikov/YandexCloudFunctions.Net.Sdk/.github/workflows/yc-cloud-function-ci-template.yml@main
     with:
       yc-bucket-name: "telegram2todoist-sources"

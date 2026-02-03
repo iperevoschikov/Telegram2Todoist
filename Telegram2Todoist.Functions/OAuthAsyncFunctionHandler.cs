@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram2Todoist.Functions.Storage;
 using Telegram2Todoist.Functions.Todoist;
@@ -46,4 +47,7 @@ public class OAuthAsyncFunctionHandler() : WebhookFunctionHandler(HandleAsync)
 
         return WebhookHandlerResponses.Redirect("https://t.me/todoist_forward_bot");
     }
+
+    protected override void ConfigureServices(IServiceCollection serviceCollection) =>
+        serviceCollection.ConfigureServices();
 }
