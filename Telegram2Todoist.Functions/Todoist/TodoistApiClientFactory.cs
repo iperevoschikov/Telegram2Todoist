@@ -1,8 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿namespace Telegram2Todoist.Functions.Todoist;
 
-namespace Telegram2Todoist.Functions.Todoist;
-
-[UsedImplicitly]
 public class TodoistApiClientFactory(IHttpClientFactory httpClientFactory)
 {
     public TodoistApiClient Create(string apiToken)
@@ -10,3 +7,4 @@ public class TodoistApiClientFactory(IHttpClientFactory httpClientFactory)
         return new TodoistApiClient(httpClientFactory, apiToken);
     }
 }
+

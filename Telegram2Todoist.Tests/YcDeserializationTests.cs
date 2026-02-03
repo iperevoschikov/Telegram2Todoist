@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using FluentAssertions;
-using Telegram2Todoist.Functions;
+using YandexCloudFunctions.Net.Sdk.Webhook;
 
 namespace Telegram2Todoist.Tests;
 
@@ -9,8 +9,7 @@ public class YcDeserializationTests
     [Test]
     public void TestRequestDeserialization()
     {
-        const string request =
-            """
+        const string request = """
             {
              "httpMethod": "POST",
              "headers": {
@@ -55,11 +54,12 @@ public class YcDeserializationTests
             }
             """;
 
-        var deserialize = () => JsonSerializer.Deserialize<FunctionHandlerRequest>(request);
+        var deserialize = () => JsonSerializer.Deserialize<WebhookHandlerRequest>(request);
         deserialize.Should().NotThrow();
 
         var result = deserialize();
         result.Should().NotBeNull();
-        result!.QueryStringParameters.Should().NotBeEmpty();
+        result!.queryStringParameters.Should().NotBeEmpty();
     }
 }
+

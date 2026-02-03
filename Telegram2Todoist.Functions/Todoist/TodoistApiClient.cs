@@ -1,10 +1,8 @@
 ﻿using System.Text;
 using System.Text.Json;
-using JetBrains.Annotations;
 
 namespace Telegram2Todoist.Functions.Todoist;
 
-[UsedImplicitly]
 public class TodoistApiClient(IHttpClientFactory httpClientFactory, string apiToken)
 {
     public const string HttpClientName = "todoist";
@@ -28,12 +26,16 @@ public class TodoistApiClient(IHttpClientFactory httpClientFactory, string apiTo
                     content: title,
                     description,
                     projectId: null,
-                    dueDate.ToString("yyyy-MM-dd"))),
+                    dueDate.ToString("yyyy-MM-dd")
+                )
+            ),
             Encoding.UTF8,
-            "application/json");
+            "application/json"
+        );
 
         content.Headers.Add("X-Request-Id", Guid.NewGuid().ToString());
 
         await httpClient.PostAsync("tasks", content);
     }
 }
+

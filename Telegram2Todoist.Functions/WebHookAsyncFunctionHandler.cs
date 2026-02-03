@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Telegram.Bot;
@@ -7,28 +6,28 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using Telegram2Todoist.Functions.Storage;
 using Telegram2Todoist.Functions.Todoist;
+using YandexCloudFunctions.Net.Sdk;
+using YandexCloudFunctions.Net.Sdk.Webhook;
 
 namespace Telegram2Todoist.Functions;
 
-[UsedImplicitly]
-public class WebHookAsyncFunctionHandler(
-    ITelegramBotClient telegramClient,
-    UsersStorage usersStorage,
-    ILogger<WebHookFunctionHandler> logger,
-    TodoistApiClientFactory todoistApiClientFactory,
-    TodoistAuthClient todoistAuthClient,
-    AuthStateStorage authStateStorage
-) : IAsyncFunctionHandler
+public class WebHookAsyncFunctionHandler() : WebhookFunctionHandler(HandleAsync)
 {
-    public async Task<FunctionHandlerResponse> HandleAsync(FunctionHandlerRequest request)
+    private static async Task<WebhookHandlerResponse> HandleAsync(
+        WebhookHandlerRequest request,
+        ITelegramBotClient telegramClient,
+        UsersStorage usersStorage,
+        ILogger<WebHookAsyncFunctionHandler> logger,
+        TodoistApiClientFactory todoistApiClientFactory,
+        TodoistAuthClient todoistAuthClient,
+        AuthStateStorage authStateStorage
+    )
     {
-        var update = JsonConvert.DeserializeObject<Update>(request.Body)!;
+        var update = JsonConvert.DeserializeObject<Update>(request.body)!;
         logger.LogInformation("Received webhook update: {Update},", update.Id);
 
-        if (update.Message?.Text?.StartsWith("DEBUG") ?? false)
-        {
-            logger.LogInformation("Request body {Body}", request.Body);
-        }
+        if (update.Message?.From?.Username == "iperevoschikov")
+            logger.LogInformation("Request body {Body}", request.body);
 
         var message = update.Message;
 
@@ -46,56 +45,61 @@ public class WebHookAsyncFunctionHandler(
             {
                 var state = await authStateStorage.CreateAuthState(userId);
 
-                await telegramClient.SendTextMessageAsync(
+                await telegramClient.SendMessage(
                     message.Chat.Id,
                     "Для работы необходимо дать боту разрешение создавать задачи в вашем Todoist",
-                    replyMarkup: new InlineKeyboardMarkup(InlineKeyboardButton
-                        .WithUrl(
+                    replyMarkup: new InlineKeyboardMarkup(
+                        InlineKeyboardButton.WithUrl(
                             "Авторизовать бота",
-                            todoistAuthClient.GetAuthUrl(state))));
+                            todoistAuthClient.GetAuthUrl(state)
+                        )
+                    )
+                );
 
-                return FunctionHandlerResponse.Ok();
+                return WebhookHandlerResponses.Ok();
             }
 
-            var title = BuildContactName(update.Message?.ForwardFrom)
-                        ?? (update.Message?.ForwardSenderName == null
-                            ? null
-                            : Regex.Unescape(update.Message?.ForwardSenderName!))
-                        ?? BuildContactName(update.Message?.From)
-                        ?? "Задача из Telegram";
+            var title =
+                BuildContactName(update.Message?.ForwardFrom)
+                ?? (
+                    update.Message?.ForwardSenderName == null
+                        ? null
+                        : Regex.Unescape(update.Message?.ForwardSenderName!)
+                )
+                ?? BuildContactName(update.Message?.From)
+                ?? "Задача из Telegram";
             var description = TelegramMessageEntitiesFormatter.ToMarkdown(update.Message);
-
             await todoistApiClientFactory
                 .Create(authToken)
                 .CreateTaskAsync(
                     title,
                     description,
-                    DateOnly.FromDateTime(DateTime.UtcNow.AddHours(5)));
+                    DateOnly.FromDateTime(DateTime.UtcNow.AddHours(5))
+                );
 
-            await telegramClient.SendTextMessageAsync(
+            await telegramClient.SendMessage(
                 message.Chat.Id,
                 "✔",
-                replyToMessageId: message.MessageId);
+                replyParameters: new ReplyParameters { MessageId = message.Id }
+            );
         }
         catch (Exception e)
         {
             logger.LogError(e, "Exception occurred {Message}", e.Message);
 
             if (message != null)
-                await telegramClient.SendTextMessageAsync(
+                await telegramClient.SendMessage(
                     message.Chat.Id,
                     "Не смог создать задачу",
-                    replyToMessageId: message.MessageId);
+                    replyParameters: new ReplyParameters { MessageId = message.Id }
+                );
         }
 
-        return FunctionHandlerResponse.Ok();
+        return WebhookHandlerResponses.Ok();
     }
 
-    [ContractAnnotation("null => null;notnull=>notnull")]
     private static string? BuildContactName(User? user)
     {
-        return user == null
-            ? null
-            : $"{user.FirstName} {user.LastName}";
+        return user == null ? null : $"{user.FirstName} {user.LastName}";
     }
 }

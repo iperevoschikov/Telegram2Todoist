@@ -1,9 +1,7 @@
 ﻿using Google.Cloud.Firestore;
-using JetBrains.Annotations;
 
 namespace Telegram2Todoist.Functions.Storage;
 
-[UsedImplicitly]
 public class AuthStateStorage(FirestoreDb firestoreDb)
 {
     private const string UserIdFieldName = "userId";
@@ -13,11 +11,13 @@ public class AuthStateStorage(FirestoreDb firestoreDb)
     {
         var id = Guid.NewGuid().ToString("N");
         var documentReference = GetDocumentReference(id);
-        await documentReference.SetAsync(new Dictionary<string, object>
-        {
-            [UserIdFieldName] = userId,
-            [ExpireAtFieldName] = Timestamp.FromDateTime(DateTime.UtcNow.AddDays(3)),
-        });
+        await documentReference.SetAsync(
+            new Dictionary<string, object>
+            {
+                [UserIdFieldName] = userId,
+                [ExpireAtFieldName] = Timestamp.FromDateTime(DateTime.UtcNow.AddDays(3)),
+            }
+        );
         return id;
     }
 
@@ -32,7 +32,5 @@ public class AuthStateStorage(FirestoreDb firestoreDb)
     }
 
     private DocumentReference GetDocumentReference(string id) =>
-        firestoreDb
-            .Collection("auth_states")
-            .Document(id);
+        firestoreDb.Collection("auth_states").Document(id);
 }
