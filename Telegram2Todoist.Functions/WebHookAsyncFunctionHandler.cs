@@ -1,7 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -24,7 +24,11 @@ public class WebHookAsyncFunctionHandler() : WebhookFunctionHandler(HandleAsync)
         AuthStateStorage authStateStorage
     )
     {
-        var update = JsonConvert.DeserializeObject<Update>(request.body)!;
+        var update = JsonSerializer.Deserialize<Update>(
+            request.body,
+            new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower }
+        )!;
+
         logger.LogInformation("Received webhook update: {Update},", update.Id);
 
         if (update.Message?.From?.Username == "iperevoschikov")
