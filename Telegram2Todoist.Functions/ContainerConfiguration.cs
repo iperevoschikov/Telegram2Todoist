@@ -18,7 +18,11 @@ public static class ContainerConfiguration
             Convert.FromBase64String(GetConfigurationValue("GOOGLE_CLOUD_JSON_CREDENTIALS"))
         );
 
-        services.AddLogging(b => b.AddSimpleConsole(c => c.SingleLine = true));
+        services.AddLogging(b =>
+        {
+            b.AddSimpleConsole(c => c.SingleLine = true);
+            b.SetMinimumLevel(LogLevel.Information);
+        });
 
         services.AddHttpClient(TodoistApiClient.HttpClientName);
 
@@ -56,4 +60,3 @@ public static class ContainerConfiguration
         return value;
     }
 }
-
