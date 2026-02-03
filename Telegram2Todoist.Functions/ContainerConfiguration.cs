@@ -1,4 +1,5 @@
-﻿using Google.Cloud.Firestore;
+﻿using Google.Apis.Auth.OAuth2;
+using Google.Cloud.Firestore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -26,15 +27,18 @@ public static class ContainerConfiguration
 
         services.AddHttpClient(TodoistApiClient.HttpClientName);
 
-        services.AddHttpClient(TodoistAuthClient.HttpClientName);
+        var credentials = CredentialFactory
+            .FromJson<ServiceAccountCredential>(googleCloudJsonCredentials)
+            .ToGoogleCredential();
 
+        services.AddHttpClient(TodoistAuthClient.HttpClientName);
         services
             .AddSingleton(
                 new FirestoreDbBuilder
                 {
                     ProjectId = "telegram2todoist",
                     DatabaseId = "telegram2todoist",
-                    JsonCredentials = googleCloudJsonCredentials,
+                    GoogleCredential = credentials,
                 }.Build()
             )
             .AddSingleton<UsersStorage>()
