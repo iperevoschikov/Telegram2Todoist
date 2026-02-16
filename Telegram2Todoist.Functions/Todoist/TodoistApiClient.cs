@@ -35,7 +35,7 @@ public class TodoistApiClient(IHttpClientFactory httpClientFactory, string apiTo
 
         content.Headers.Add("X-Request-Id", Guid.NewGuid().ToString());
 
-        await httpClient.PostAsync("tasks", content);
+        var result = await httpClient.PostAsync("tasks", content);
+        result.EnsureSuccessStatusCode();
     }
 }
-
