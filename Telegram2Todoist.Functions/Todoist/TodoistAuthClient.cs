@@ -4,14 +4,15 @@ using System.Web;
 namespace Telegram2Todoist.Functions.Todoist;
 
 public class TodoistAuthClient(
-    IHttpClientFactory httpClientFactory, 
-    TodoistAuthClientSettings settings)
+    IHttpClientFactory httpClientFactory,
+    TodoistAuthClientSettings settings
+)
 {
     public const string HttpClientName = "todoist_oauth";
 
     public string GetAuthUrl(string state)
     {
-        var uriBuilder = new UriBuilder("https://todoist.com/oauth/authorize");
+        var uriBuilder = new UriBuilder("https://app.todoist.com/oauth/authorize");
         var query = HttpUtility.ParseQueryString(uriBuilder.Query);
         query["client_id"] = settings.ClientId;
         query["scope"] = "task:add";
@@ -23,13 +24,18 @@ public class TodoistAuthClient(
     public async Task<string> ObtainAccessToken(string code)
     {
         var client = httpClientFactory.CreateClient(HttpClientName);
-        client.BaseAddress = new Uri("https://todoist.com/oauth/access_token");
-        var response = await client.PostAsync("", new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["client_id"] = settings.ClientId,
-            ["client_secret"] = settings.ClientSecret,
-            ["code"] = code,
-        }));
+        client.BaseAddress = new Uri("https://api.todoist.com/oauth/access_token");
+        var response = await client.PostAsync(
+            "",
+            new FormUrlEncodedContent(
+                new Dictionary<string, string>
+                {
+                    ["client_id"] = settings.ClientId,
+                    ["client_secret"] = settings.ClientSecret,
+                    ["code"] = code,
+                }
+            )
+        );
         response.EnsureSuccessStatusCode();
         var stringResponse = await response.Content.ReadAsStringAsync();
         var tokenResponse = JsonSerializer.Deserialize<TodoistAccessTokenResponse>(stringResponse);
@@ -40,3 +46,4 @@ public class TodoistAuthClient(
         return tokenResponse.AccessToken;
     }
 }
+

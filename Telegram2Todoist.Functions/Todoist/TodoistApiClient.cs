@@ -10,7 +10,7 @@ public class TodoistApiClient(IHttpClientFactory httpClientFactory, string apiTo
     private HttpClient CreateHttpClient()
     {
         var httpClient = httpClientFactory.CreateClient(HttpClientName);
-        httpClient.BaseAddress = new Uri("https://api.todoist.com/rest/v2/");
+        httpClient.BaseAddress = new Uri("https://api.todoist.com/api/v1/tasks");
         httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
         httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiToken}");
         return httpClient;
