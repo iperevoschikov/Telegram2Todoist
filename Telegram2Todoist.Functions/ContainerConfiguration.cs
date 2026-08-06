@@ -13,6 +13,7 @@ public static class ContainerConfiguration
     public static IServiceCollection ConfigureServices(this IServiceCollection services)
     {
         var telegramAccessToken = GetConfigurationValue("TG_ACCESS_TOKEN");
+        var telegramBaseUrl = GetConfigurationValue("TG_BASE_URL");
         var todoistAuthClientId = GetConfigurationValue("TODOIST_AUTH_CLIENT_ID");
         var todoistAuthClientSecret = GetConfigurationValue("TODOIST_AUTH_CLIENT_SECRET");
         var googleCloudJsonCredentials = System.Text.Encoding.UTF8.GetString(
@@ -50,7 +51,11 @@ public static class ContainerConfiguration
             )
             .AddSingleton<TodoistAuthClient>()
             .AddSingleton<TodoistApiClientFactory>()
-            .AddSingleton<ITelegramBotClient>(new TelegramBotClient(telegramAccessToken));
+            .AddSingleton<ITelegramBotClient>(
+                new TelegramBotClient(
+                    new TelegramBotClientOptions(telegramAccessToken, telegramBaseUrl)
+                )
+            );
         return services;
     }
 
