@@ -24,10 +24,7 @@ public class WebHookAsyncFunctionHandler() : WebhookFunctionHandler(HandleAsync)
         AuthStateStorage authStateStorage
     )
     {
-        var update = JsonSerializer.Deserialize<Update>(
-            request.body,
-            new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower }
-        )!;
+        var update = JsonSerializer.Deserialize<Update>(request.body, JsonBotAPI.Options)!;
 
         logger.LogInformation("Received webhook update: {Update},", update.Id);
 
