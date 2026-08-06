@@ -1,7 +1,6 @@
 ﻿using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Firestore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram2Todoist.Functions.Storage;
 using Telegram2Todoist.Functions.Todoist;
@@ -19,12 +18,6 @@ public static class ContainerConfiguration
         var googleCloudJsonCredentials = System.Text.Encoding.UTF8.GetString(
             Convert.FromBase64String(GetConfigurationValue("GOOGLE_CLOUD_JSON_CREDENTIALS"))
         );
-
-        services.AddLogging(b =>
-        {
-            b.AddSimpleConsole(c => c.SingleLine = true);
-            b.SetMinimumLevel(LogLevel.Information);
-        });
 
         services.AddHttpClient(TodoistApiClient.HttpClientName);
 
